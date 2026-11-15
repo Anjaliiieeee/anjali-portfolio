@@ -55,7 +55,7 @@ export default function Hero() {
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center">
         {/* Main 3-Column / Asymmetric Composition (Matching Reference Image) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-          
+
           {/* =========================================================================
               LEFT COLUMN: Introduction, Large Typography, Buttons, Location
               ========================================================================= */}
@@ -195,8 +195,9 @@ export default function Hero() {
                 <div className="absolute right-0 bottom-0 w-44 h-44 rounded-tl-[100px] bg-[#183D2B]" />
 
                 {/* Actual Portrait Image */}
+
                 <motion.img
-                  src="/profile.jpeg"
+                  src={`${import.meta.env.BASE_URL}profile.jpeg`}
                   alt="Anjali Singh"
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
