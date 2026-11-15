@@ -1,195 +1,142 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { heroRoles } from "../data/content";
-import { ChevronLeft, ChevronRight } from "./Icons";
 
 export default function RoleCalendarSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [isPaused, setIsPaused] = useState(false);
+  const [paused, setPaused] = useState(false);
   const reduceMotion = useReducedMotion();
-  const timerRef = useRef(null);
 
   const totalRoles = heroRoles.length;
   const currentRole = heroRoles[currentIndex];
 
-  const goToRole = useCallback(
-    (index) => {
-      setDirection(index > currentIndex ? 1 : -1);
-      setCurrentIndex(index);
-    },
-    [currentIndex]
-  );
-
-  const handleNext = useCallback(() => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % totalRoles);
-  }, [totalRoles]);
-
-  const handlePrev = useCallback(() => {
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + totalRoles) % totalRoles);
-  }, [totalRoles]);
-
-  // Autoplay functionality
+  // Auto-advance only when motion is allowed and the person is not interacting.
   useEffect(() => {
-    if (isPaused || reduceMotion) return;
+    if (totalRoles <= 1 || paused || reduceMotion) return;
 
-    timerRef.current = setInterval(() => {
-      handleNext();
-    }, 3800);
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalRoles);
+    }, 5000);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isPaused, handleNext, reduceMotion]);
+    return () => clearInterval(timer);
+  }, [totalRoles, paused, reduceMotion]);
 
-  // Pause when window/tab is not visible
-  useEffect(() => {
-    const onVisibilityChange = () => {
-      setIsPaused(document.hidden);
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, []);
+  if (!currentRole) return null;
 
-  const pageVariants = {
-    enter: (dir) => ({
-      rotateX: reduceMotion ? 0 : dir > 0 ? 55 : -55,
-      opacity: 0,
-      y: reduceMotion ? 0 : dir > 0 ? 20 : -20,
-      transformOrigin: dir > 0 ? "top center" : "bottom center",
-    }),
-    center: {
-      rotateX: 0,
-      opacity: 1,
-      y: 0,
-      transition: {
-        rotateX: { type: "spring", stiffness: 240, damping: 24 },
-        opacity: { duration: 0.3 },
-        y: { type: "spring", stiffness: 240, damping: 24 },
-      },
-    },
-    exit: (dir) => ({
-      rotateX: reduceMotion ? 0 : dir > 0 ? -55 : 55,
-      opacity: 0,
-      y: reduceMotion ? 0 : dir > 0 ? -20 : 20,
-      transformOrigin: dir > 0 ? "bottom center" : "top center",
-      transition: {
-        rotateX: { duration: 0.25 },
-        opacity: { duration: 0.2 },
-        y: { duration: 0.25 },
-      },
-    }),
-  };
+  // Flip animation normally; plain fade when reduced motion is on.
+  const variants = reduceMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { duration: 0.2 } },
+        exit: { opacity: 0, transition: { duration: 0.15 } },
+      }
+    : {
+        initial: { rotateX: -90, opacity: 0 },
+        animate: {
+          rotateX: 0,
+          opacity: 1,
+          transition: { duration: 0.45, ease: [0.22, 0.75, 0.25, 1] },
+        },
+        exit: {
+          rotateX: 90,
+          opacity: 0,
+          transition: { duration: 0.35, ease: [0.65, 0, 0.35, 1] },
+        },
+      };
 
   return (
     <div
-      className="relative w-full max-w-md mx-auto"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
+      className="relative mx-auto w-full max-w-md"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
     >
-      {/* Outer Calendar Wrapper with Perspective for 3D flip */}
-      <div className="relative pt-3 perspective-1000">
-        {/* Binder Rings at the Top (6 Rings) */}
+      <div className="relative pt-3" style={{ perspective: "1600px" }}>
+        {/* Fixed calendar rings */}
         <div className="absolute -top-1 left-0 right-0 z-30 flex justify-center gap-7 sm:gap-9 pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex flex-col items-center">
-              {/* Metallic Ring Loop */}
+          {[...Array(6)].map((_, index) => (
+            <div key={index} className="flex flex-col items-center">
               <div className="w-2.5 h-6 rounded-full bg-gradient-to-b from-[#8C7E68] via-[#E2D8C7] to-[#7A6C56] shadow-sm border border-[#6E604B]" />
-              {/* Paper Hole Punch Shadow */}
               <div className="-mt-1.5 w-3 h-1.5 rounded-full bg-[#191919]/15" />
             </div>
           ))}
         </div>
 
-        {/* Physical Paper Card with Left/Right Nav Arrows */}
-        <div className="relative rounded-2xl border border-[#D8CDBB] bg-[#FFFDF8] calendar-card-shadow overflow-hidden pt-7 pb-6 px-6 sm:px-8">
-          {/* Paper Texture Overlay */}
-          <div className="pointer-events-none absolute inset-0 opacity-40 paper-grain" />
+        {/* Paper stack */}
+        <div className="relative">
+          <div className="absolute inset-0 translate-y-2 rounded-2xl border border-[#D8CDBB] bg-[#E9DDC9] shadow-md" />
+          <div className="absolute inset-0 translate-y-1 rounded-2xl border border-[#D8CDBB] bg-[#FFFDF8] shadow-sm" />
 
-          {/* Left Arrow Button */}
-          <button
-            type="button"
-            aria-label="Previous role"
-            onClick={handlePrev}
-            className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 grid h-8 w-8 place-items-center rounded-full border border-[#D8CDBB] bg-[#F4EFE5] text-[#191919] shadow-xs hover:bg-[#183D2B] hover:text-[#FFFDF8] hover:border-[#183D2B] transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentRole.id}
+              variants={variants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              style={{
+                transformOrigin: "top center",
+                transformStyle: "preserve-3d",
+                backfaceVisibility: "hidden",
+              }}
+              className="relative z-10 rounded-2xl border border-[#D8CDBB] bg-[#FFFDF8] calendar-card-shadow overflow-hidden pt-7 pb-5 px-6 sm:px-8"
+            >
+              <div className="pointer-events-none absolute inset-0 opacity-40 paper-grain" />
 
-          {/* Right Arrow Button */}
-          <button
-            type="button"
-            aria-label="Next role"
-            onClick={handleNext}
-            className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 z-20 grid h-8 w-8 place-items-center rounded-full border border-[#D8CDBB] bg-[#F4EFE5] text-[#191919] shadow-xs hover:bg-[#183D2B] hover:text-[#FFFDF8] hover:border-[#183D2B] transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+              {/* Header */}
+              <div className="relative z-10 flex items-center justify-between border-b border-[#D8CDBB]/40 pb-2.5 font-mono text-[10px] uppercase tracking-wider text-[#5E584C]">
+                <span className="font-semibold text-[#191919]">
+                  {currentRole.label ?? "Current focus"}
+                </span>
 
-          {/* Top Metadata Header: CURRENT ROLE / ACTIVE Status */}
-          <div className="relative z-10 flex items-center justify-between border-b border-[#D8CDBB]/40 pb-2.5 font-mono text-[10px] uppercase tracking-wider text-[#777064]">
-            <span className="font-semibold text-[#191919]">CURRENT ROLE</span>
-            <span className="flex items-center gap-1.5 font-bold text-[#183D2B]">
-              <span className="h-2 w-2 rounded-full bg-[#183D2B] animate-pulse" />
-              ACTIVE
-            </span>
-          </div>
+                <span className="flex items-center gap-1.5 font-bold text-[#183D2B]">
+                  <span className="h-2 w-2 rounded-full bg-[#183D2B] motion-safe:animate-pulse" />
+                  Open to work
+                </span>
+              </div>
 
-          {/* Animated Calendar Page Content */}
-          <div className="relative min-h-[120px] flex items-center justify-center py-2 text-center">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={currentRole.id}
-                custom={direction}
-                variants={pageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="w-full px-5 sm:px-6"
+              {/* Role content (announced politely when it changes) */}
+              <div
+                className="relative z-10 min-h-[120px] flex flex-col items-center justify-center py-4 text-center"
+                aria-live="polite"
               >
-                {/* Role Count (01 / 04) */}
-                <div className="font-mono text-xs text-[#777064] tracking-widest font-semibold mb-1">
-                  {currentRole.number} / {currentRole.total}
-                </div>
-
-                {/* Main Role Title (Cinzel Font) */}
                 <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#191919] tracking-tight">
                   {currentRole.title}
                 </h3>
 
-                {/* Role Description */}
-                <p className="mt-2 font-sans text-xs sm:text-sm text-[#777064] leading-relaxed max-w-xs mx-auto">
+                <p className="mt-2 font-sans text-sm text-[#5E584C] leading-relaxed max-w-xs mx-auto">
                   {currentRole.description}
                 </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
+              </div>
 
-      {/* Four Role Navigation Pill Indicators (Matching Reference) */}
-      <div className="mt-4 flex flex-wrap justify-center gap-1.5 sm:gap-2">
-        {heroRoles.map((role, idx) => {
-          const isActive = idx === currentIndex;
-          return (
-            <button
-              key={role.id}
-              type="button"
-              onClick={() => goToRole(idx)}
-              className={`rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 pill-btn ${
-                isActive
-                  ? "bg-[#183D2B] text-[#FFFDF8] shadow-xs"
-                  : "border border-[#D8CDBB] bg-[#FFFDF8]/80 text-[#777064] hover:bg-[#F4EFE5] hover:text-[#191919]"
-              }`}
-            >
-              {role.badgeLabel}
-            </button>
-          );
-        })}
+              {/* Clickable dots replace the "01 / 04" counter */}
+              {totalRoles > 1 && (
+                <div
+                  className="relative z-10 flex items-center justify-center gap-2 pt-1"
+                  role="tablist"
+                  aria-label="Choose a role"
+                >
+                  {heroRoles.map((role, index) => (
+                    <button
+                      key={role.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={index === currentIndex}
+                      aria-label={role.title}
+                      onClick={() => setCurrentIndex(index)}
+                      className={`h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183D2B] ${
+                        index === currentIndex
+                          ? "w-6 bg-[#183D2B]"
+                          : "w-2 bg-[#D8CDBB] hover:bg-[#8C7E68]"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

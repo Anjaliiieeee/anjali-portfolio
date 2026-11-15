@@ -1,235 +1,170 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { profile } from "../data/content";
 import RoleCalendarSlider from "./RoleCalendarSlider";
-import {
-  ArrowRight,
-  Download,
-  GithubIcon,
-  LinkedinIcon,
-  MapPinIcon,
-  MouseScrollIcon,
-  StarIcon,
-} from "./Icons";
+import { ArrowRight, Download, MapPinIcon, MouseScrollIcon } from "./Icons";
 import { downloadResume } from "../lib/downloadResume";
 
-const githubLink = profile.github;
-const linkedinLink = profile.linkedin;
-
 export default function Hero() {
+  const reduceMotion = useReducedMotion();
+
+  // One orchestrated entrance: the left column reveals top to bottom, once.
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduceMotion ? 0 : 0.09 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  };
+
+  // Optional: add `stack: ["React", "Node.js", ...]` to `profile` in data/content.js.
+  const stack = Array.isArray(profile.stack) ? profile.stack : [];
+
   return (
     <section
       id="home"
-      className="relative overflow-hidden bg-[#F4EFE5] pt-28 pb-12 sm:pt-36 sm:pb-16 paper-grain min-h-[92vh] flex flex-col justify-between"
+      className="relative overflow-hidden bg-[#F4EFE5] pt-28 pb-10 sm:pt-36 sm:pb-12 paper-grain min-h-[92vh] flex flex-col justify-between"
     >
-      {/* Decorative Organic Background Elements (Matching Reference) */}
+      {/* Background: one soft green arch behind the portrait, one glow bottom-left */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {/* Top-Right Light Green Arch & Forest Organic Backdrop */}
-        <div className="absolute -right-20 top-16 w-[480px] h-[580px] rounded-bl-[160px] rounded-tl-[240px] bg-[#E5F1DF]/70 blur-[1px]" />
-        <div className="absolute right-4 top-24 w-[360px] h-[500px] rounded-l-[180px] bg-[#183D2B]/10 blur-[2px]" />
-
-        {/* Delicate grid pattern circle */}
-        <div
-          className="absolute right-16 top-32 w-72 h-72 rounded-full border border-[#D8CDBB]/60 opacity-30"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #183D2B 1px, transparent 1px), linear-gradient(to bottom, #183D2B 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-
-        {/* Bottom-Left Soft Light Green Glow */}
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-[#E5F1DF]/80 blur-2xl" />
-
-        {/* Decorative Four-Point Stars */}
-        <div className="absolute left-[38%] top-24 text-[#183D2B]/35">
-          <StarIcon className="w-5 h-5" />
-        </div>
-        <div className="absolute right-[44%] top-44 text-[#183D2B]/25">
-          <StarIcon className="w-4 h-4" />
-        </div>
-        <div className="absolute left-16 bottom-16 text-[#183D2B]/40">
-          <StarIcon className="w-6 h-6" />
-        </div>
+        <div className="absolute -right-24 top-16 hidden lg:block w-[560px] h-[620px] rounded-l-[280px] bg-[#E5F1DF]/70" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-[#E5F1DF]/70 blur-2xl" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center">
-        {/* Main 3-Column / Asymmetric Composition (Matching Reference Image) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-
-          {/* =========================================================================
-              LEFT COLUMN: Introduction, Large Typography, Buttons, Location
-              ========================================================================= */}
-          <div className="lg:col-span-5 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* HELLO, I'M with Left Line */}
-              <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-[#777064] font-semibold mb-3">
-                <span className="w-10 h-px bg-[#777064]/50" />
-                <span>HELLO, I&apos;M</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* LEFT: name, tagline, actions, status */}
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="lg:col-span-7 space-y-7"
+          >
+            <motion.div variants={item}>
+              <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-[#5E584C] font-semibold mb-4">
+                <span className="w-10 h-px bg-[#5E584C]/50" />
+                <span>Hello, I&apos;m</span>
               </div>
 
-              {/* Main Name (Cinzel Font) */}
               <h1 className="font-serif text-5xl sm:text-6xl xl:text-7xl font-extrabold uppercase tracking-tight text-[#191919] leading-[0.95]">
-                ANJALI SINGH
-              </h1>
-
-              {/* Professional Title with Forest Green DEVELOPER. */}
-              <h2 className="mt-2 font-serif text-3xl sm:text-4xl xl:text-5xl font-bold uppercase tracking-tight text-[#191919]">
-                SOFTWARE{" "}
-                <span className="text-[#183D2B]">
-                  DEVELOPER.
+                Anjali
+                <br />
+                Singh
+                <span className="mt-3 block text-[#183D2B]">
+                  Software
+                  <br />
+                  Developer.
                 </span>
-              </h2>
+              </h1>
             </motion.div>
 
-            {/* Supporting Introduction Text */}
+            {/* Edit profile.heroShortIntro in data/content.js to make this specific. */}
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="font-sans text-sm sm:text-base text-[#777064] leading-relaxed max-w-md"
+              variants={item}
+              className="font-sans text-lg text-[#4A453B] leading-relaxed max-w-md"
             >
               {profile.heroShortIntro}
             </motion.p>
 
-            {/* Action Buttons: Explore My Work & Download Resume */}
+            {stack.length > 0 && (
+              <motion.ul
+                variants={item}
+                className="flex flex-wrap gap-2 max-w-md"
+                aria-label="Core technologies"
+              >
+                {stack.map((tech) => (
+                  <li
+                    key={tech}
+                    className="rounded-full border border-[#D8CDBB] bg-[#FFFDF8] px-3 py-1 font-sans text-xs font-medium text-[#191919]"
+                  >
+                    {tech}
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
-              className="flex flex-wrap items-center gap-3 pt-1"
+              variants={item}
+              className="flex flex-wrap items-center gap-x-6 gap-y-3"
             >
               <a
                 href="#projects"
-                className="inline-flex items-center gap-2 rounded-full bg-[#183D2B] px-6 py-3 font-sans text-xs font-semibold text-[#FFFDF8] shadow-xs pill-btn hover:bg-[#122e20] transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-[#183D2B] px-6 py-3 font-sans text-sm font-semibold text-[#FFFDF8] shadow-xs pill-btn hover:bg-[#122e20] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183D2B]"
               >
-                <span>Explore My Work</span>
+                <span>Explore my work</span>
                 <ArrowRight className="h-4 w-4" />
               </a>
 
               <button
                 type="button"
                 onClick={downloadResume}
-                className="inline-flex items-center gap-2 rounded-full border border-[#D8CDBB] bg-[#F4EFE5] px-5 py-3 font-sans text-xs font-semibold text-[#191919] shadow-xs pill-btn hover:bg-[#FFFDF8] hover:border-[#183D2B] transition-colors"
+                className="inline-flex items-center gap-2 font-sans text-sm font-semibold text-[#191919] underline underline-offset-4 decoration-[#D8CDBB] hover:decoration-[#183D2B] hover:text-[#183D2B] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183D2B]"
               >
-                <Download className="h-3.5 w-3.5" />
-                <span>Download Resume (PDF)</span>
+                <Download className="h-4 w-4" />
+                <span>Download resume (PDF)</span>
               </button>
             </motion.div>
 
-            {/* Location & Status Line */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#777064] font-sans"
+              variants={item}
+              className="flex flex-wrap items-center gap-3 font-sans text-sm"
             >
               <div className="flex items-center gap-1.5 font-medium text-[#191919]">
-                <MapPinIcon className="h-3.5 w-3.5 text-[#183D2B]" />
+                <MapPinIcon className="h-4 w-4 text-[#183D2B]" />
                 <span>{profile.location}</span>
               </div>
-              <span className="text-[#D8CDBB]">|</span>
-              <span className="text-[#777064]">{profile.status}</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#E5F1DF] px-3 py-1 text-xs font-semibold text-[#183D2B]">
+                <span className="h-2 w-2 rounded-full bg-[#2E8B57]" />
+                {profile.status}
+              </span>
             </motion.div>
+          </motion.div>
 
-            {/* Social Icons */}
+          {/* RIGHT: portrait is the hero image; the role card overlaps its lower
+              corner on purpose (over the shirt, never the face) */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end pb-2 lg:pb-12">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.45 }}
-              className="flex items-center gap-3 pt-1"
+              transition={{ duration: 0.8, delay: 0.15 }}
+              className="relative w-full max-w-[320px] sm:max-w-[380px]"
             >
-              <a
-                href={githubLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub Profile"
-                className="grid h-8 w-8 place-items-center rounded-full border border-[#D8CDBB] bg-[#FFFDF8] text-[#191919] hover:bg-[#183D2B] hover:text-[#FFFDF8] hover:border-[#183D2B] transition-colors"
-              >
-                <GithubIcon className="h-4 w-4" />
-              </a>
+              {/* Handwritten line: outside the photo on large screens */}
+              <p className="hidden lg:block absolute -left-24 top-2 z-20 font-script text-2xl leading-tight text-[#191919] -rotate-6 select-none pointer-events-none">
+                Build
+                <br />
+                <span className="pl-3">Innovate</span>
+                <br />
+                <span className="pl-6">Grow</span>
+              </p>
 
-              <a
-                href={linkedinLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn Profile"
-                className="grid h-8 w-8 place-items-center rounded-full border border-[#D8CDBB] bg-[#FFFDF8] text-[#191919] hover:bg-[#183D2B] hover:text-[#FFFDF8] hover:border-[#183D2B] transition-colors"
-              >
-                <LinkedinIcon className="h-4 w-4" />
-              </a>
-            </motion.div>
-          </div>
-
-          {/* =========================================================================
-              CENTER: Animated Calendar Role Slider (Notebook with 6 Binder Rings)
-              ========================================================================= */}
-          <div className="lg:col-span-4 flex justify-center py-4 lg:py-0">
-            <RoleCalendarSlider />
-          </div>
-
-          {/* =========================================================================
-              RIGHT COLUMN: Professional Portrait in Organic Layered Composition
-              ========================================================================= */}
-          <div className="lg:col-span-3 flex justify-center lg:justify-end relative">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative w-full max-w-[340px] sm:max-w-[380px]"
-            >
-              {/* Floating Cursive Script: "Build Innovate Grow" (Matching Reference) */}
-              <div className="absolute -top-6 right-2 z-20 font-script text-2xl sm:text-3xl text-[#191919] -rotate-6 select-none pointer-events-none">
-                Build <br />
-                <span className="pl-4">Innovate</span> <br />
-                <span className="pl-8">Grow</span>
-              </div>
-
-              {/* Layered Organic Backdrop Shapes */}
-              <div className="relative mx-auto w-full aspect-[4/5] overflow-hidden rounded-t-[140px] rounded-b-[40px] border border-[#D8CDBB]/70 bg-gradient-to-b from-[#E5F1DF] via-[#E9DDC9] to-[#183D2B]/15 shadow-lg">
-                {/* Organic Green Inner Arch */}
-                <div className="absolute inset-x-4 top-4 bottom-0 rounded-t-[120px] bg-[#183D2B]/20" />
-                <div className="absolute right-0 bottom-0 w-44 h-44 rounded-tl-[100px] bg-[#183D2B]" />
-
-                {/* Actual Portrait Image */}
-
-                <motion.img
+              <div className="relative w-full aspect-[4/5] overflow-hidden rounded-t-[160px] rounded-b-[40px] border border-[#D8CDBB]/60 bg-gradient-to-b from-[#E5F1DF] via-[#E9DDC9] to-[#183D2B]/15 shadow-[0_18px_40px_-18px_rgba(24,61,43,0.35)]">
+                <img
                   src={`${import.meta.env.BASE_URL}profile.jpeg`}
-                  alt="Anjali Singh"
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative z-10 w-full h-full object-cover object-top filter contrast-105"
+                  alt="Portrait of Anjali Singh"
+                  width={760}
+                  height={950}
+                  fetchPriority="high"
+                  className="w-full h-full object-cover object-top"
                 />
+              </div>
 
-                {/* Subtle vignette border */}
-                <div className="absolute inset-0 z-20 pointer-events-none rounded-t-[140px] rounded-b-[40px] border border-[#D8CDBB]/80" />
+              {/* Role card: stacked under the photo on mobile, overlapping on desktop */}
+              <div className="mt-8 lg:mt-0 lg:absolute lg:-bottom-12 lg:-left-24 z-20 w-full lg:w-[360px]">
+                <RoleCalendarSlider />
               </div>
             </motion.div>
           </div>
-
         </div>
 
-        {/* =========================================================================
-            BOTTOM DIVIDER & SCROLL TO EXPLORE (Matching Reference Image)
-            ========================================================================= */}
-        <div className="mt-12 sm:mt-16 pt-6 border-t border-[#D8CDBB] flex items-center justify-between font-sans text-xs uppercase tracking-wider text-[#777064]">
-          {/* Left Metadata / Star Accent */}
-          <div className="flex items-center gap-2">
-            <span className="text-[#183D2B] font-bold">●</span>
-            <span className="hidden sm:inline">PUNE, MH, IN — AVAILABLE FOR ROLES</span>
-            <span className="sm:hidden">PUNE, INDIA</span>
-          </div>
-
-          {/* Right Scroll Indicator */}
+        {/* Bottom strip: scroll cue only */}
+        <div className="mt-16 sm:mt-14 pt-5 border-t border-[#D8CDBB] flex items-center justify-end font-sans text-xs uppercase tracking-wider text-[#5E584C]">
           <a
             href="#about"
-            className="group flex items-center gap-2 text-[#777064] hover:text-[#183D2B] transition-colors"
+            className="group flex items-center gap-2 hover:text-[#183D2B] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183D2B]"
           >
-            <span>SCROLL TO EXPLORE</span>
-            <MouseScrollIcon className="h-5 w-4 text-[#183D2B] transition-transform group-hover:translate-y-0.5" />
+            <span>Scroll to explore</span>
+            <MouseScrollIcon className="h-5 w-4 text-[#183D2B] transition-transform group-hover:translate-y-0.5 motion-reduce:transition-none" />
           </a>
         </div>
       </div>
