@@ -39,11 +39,13 @@ export default function About() {
             {/* Profile snapshot */}
             <div className="mt-5 flex items-center gap-4">
               <div className="relative shrink-0 w-20 h-20 rounded-2xl overflow-hidden border border-[#D8CDBB] bg-[#E9DDC9]">
+
                 <img
-                  src="/profile.jpeg"
+                  src={`${import.meta.env.BASE_URL}profile.jpeg`}
                   alt="Anjali Singh"
                   className="w-full h-full object-cover object-top"
                 />
+
               </div>
 
               <div>
